@@ -5,7 +5,7 @@ Flask-CORS==4.0.0
 # LLM and AI
 langchain==0.3.27
 langchain-community==0.3.27
-langchain-core==0.3.28
+langchain-core==0.3.81
 chromadb==0.4.22
 ollama==0.1.6
 
