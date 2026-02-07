@@ -1,0 +1,23 @@
+# Flask
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# LLM and AI
+langchain==0.1.0
+langchain-community==0.0.10
+chromadb==0.4.22
+ollama==0.1.6
+
+# Vector store and embeddings
+sentence-transformers==2.2.2
+
+# Utilities
+python-dotenv==1.0.0
+pydantic==2.5.3
+requests==2.31.0
+
+# Development
+pytest==7.4.3
+pytest-flask==1.3.0
+black==23.12.1
+flake8==7.0.0

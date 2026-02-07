@@ -1,0 +1,33 @@
+[Unit]
+Description=LLM Weight Loss Expert API
+After=network.target ollama.service
+Wants=ollama.service
+
+[Service]
+Type=simple
+User=llmapp
+Group=llmapp
+WorkingDirectory=/opt/llm-calorie-app
+Environment="PATH=/opt/llm-calorie-app/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=/opt/llm-calorie-app/.env
+ExecStart=/opt/llm-calorie-app/venv/bin/python /opt/llm-calorie-app/backend/app.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Resource limits
+LimitNOFILE=65536
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=llm-calorie-app
+
+[Install]
+WantedBy=multi-user.target
