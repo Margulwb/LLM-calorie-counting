@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Ekspert od Odchudzania</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #f44;
+            color: #c33;
+        }
+
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .macro-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .macro-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .macro-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .macro-card .unit {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏋️ LLM Ekspert od Odchudzania</h1>
+            <p>Twój osobisty asystent diety i treningów powered by AI</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('expert')">💬 Zapytaj Eksperta</button>
+            <button class="tab" onclick="showTab('deficit')">📊 Kalkulator Kalorii</button>
+            <button class="tab" onclick="showTab('meal')">🍽️ Plan Posiłków</button>
+            <button class="tab" onclick="showTab('workout')">💪 Plan Treningowy</button>
+            <button class="tab" onclick="showTab('progress')">📈 Analiza Postępów</button>
+        </div>
+
+        <!-- Expert Chat -->
+        <div id="expert" class="tab-content active">
+            <h2>💬 Zapytaj Eksperta</h2>
+            <p style="margin-bottom: 20px; color: #666;">Zadaj dowolne pytanie o odchudzanie, dietę, trening lub suplementację</p>
+            
+            <div class="form-group">
+                <label>Twoje Pytanie:</label>
+                <textarea id="expertQuestion" placeholder="Np. Jak mogę przyspieszyć spalanie tłuszczu? Ile białka powinienem jeść?"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Waga (kg) - opcjonalnie:</label>
+                    <input type="number" id="expertWeight" placeholder="80">
+                </div>
+                <div class="form-group">
+                    <label>Wzrost (cm) - opcjonalnie:</label>
+                    <input type="number" id="expertHeight" placeholder="180">
+                </div>
+                <div class="form-group">
+                    <label>Wiek - opcjonalnie:</label>
+                    <input type="number" id="expertAge" placeholder="30">
+                </div>
+            </div>
+
+            <button class="btn" onclick="askExpert()">Zapytaj</button>
+
+            <div class="loading" id="expertLoading">
+                <div class="spinner"></div>
+                <p>Ekspert analizuje twoje pytanie...</p>
+            </div>
+
+            <div class="result" id="expertResult">
+                <h3>Odpowiedź Eksperta:</h3>
+                <pre id="expertAnswer"></pre>
+            </div>
+        </div>
+
+        <!-- Calorie Calculator -->
+        <div id="deficit" class="tab-content">
+            <h2>📊 Kalkulator Kalorii i Deficytu</h2>
+            <p style="margin-bottom: 20px; color: #666;">Oblicz swoje BMR, TDEE i makroskładniki</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Waga (kg):</label>
+                    <input type="number" id="calcWeight" placeholder="80" required>
+                </div>
+                <div class="form-group">
+                    <label>Wzrost (cm):</label>
+                    <input type="number" id="calcHeight" placeholder="180" required>
+                </div>
+                <div class="form-group">
+                    <label>Wiek:</label>
+                    <input type="number" id="calcAge" placeholder="30" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Płeć:</label>
+                    <select id="calcGender">
+                        <option value="male">Mężczyzna</option>
+                        <option value="female">Kobieta</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Poziom Aktywności:</label>
+                    <select id="calcActivity">
+                        <option value="sedentary">Siedzący (brak ćwiczeń)</option>
+                        <option value="light">Lekka (1-3 dni/tydz)</option>
+                        <option value="moderate">Umiarkowana (3-5 dni/tydz)</option>
+                        <option value="high">Wysoka (6-7 dni/tydz)</option>
+                        <option value="very_high">Bardzo wysoka (2x dziennie)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Cel:</label>
+                    <select id="calcGoal">
+                        <option value="weight_loss">Redukcja wagi</option>
+                        <option value="maintenance">Utrzymanie wagi</option>
+                        <option value="muscle_gain">Przyrost masy</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="calculateDeficit()">Oblicz</button>
+
+            <div class="loading" id="calcLoading">
+                <div class="spinner"></div>
+                <p>Obliczam...</p>
+            </div>
+
+            <div class="result" id="calcResult">
+                <h3>Twoje Wyniki:</h3>
+                <div class="macro-grid" id="calcData"></div>
+                <div style="margin-top: 20px;">
+                    <h4>Rekomendacje:</h4>
+                    <ul id="calcRecommendations" style="margin-left: 20px; line-height: 1.8;"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Meal Plan -->
+        <div id="meal" class="tab-content">
+            <h2>🍽️ Generator Planu Posiłków</h2>
+            <p style="margin-bottom: 20px; color: #666;">Wygeneruj spersonalizowany plan posiłków na dzień</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Kalorie dziennie:</label>
+                    <input type="number" id="mealCalories" placeholder="2000" required>
+                </div>
+                <div class="form-group">
+                    <label>Białko (g):</label>
+                    <input type="number" id="mealProtein" placeholder="150">
+                </div>
+                <div class="form-group">
+                    <label>Węglowodany (g):</label>
+                    <input type="number" id="mealCarbs" placeholder="200">
+                </div>
+                <div class="form-group">
+                    <label>Tłuszcze (g):</label>
+                    <input type="number" id="mealFats" placeholder="60">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Liczba posiłków dziennie:</label>
+                <select id="mealCount">
+                    <option value="3">3 posiłki</option>
+                    <option value="4">4 posiłki</option>
+                    <option value="5">5 posiłków</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="generateMealPlan()">Generuj Plan Posiłków</button>
+
+            <div class="loading" id="mealLoading">
+                <div class="spinner"></div>
+                <p>Tworzę spersonalizowany plan posiłków...</p>
+            </div>
+
+            <div class="result" id="mealResult">
+                <h3>Twój Plan Posiłków:</h3>
+                <pre id="mealPlan"></pre>
+            </div>
+        </div>
+
+        <!-- Workout Plan -->
+        <div id="workout" class="tab-content">
+            <h2>💪 Generator Planu Treningowego</h2>
+            <p style="margin-bottom: 20px; color: #666;">Stwórz plan treningowy dopasowany do twoich celów</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cel:</label>
+                    <select id="workoutGoal">
+                        <option value="weight_loss">Redukcja wagi</option>
+                        <option value="muscle_gain">Budowa mięśni</option>
+                        <option value="general_fitness">Ogólna sprawność</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Poziom zaawansowania:</label>
+                    <select id="workoutExperience">
+                        <option value="beginner">Początkujący</option>
+                        <option value="intermediate">Średniozaawansowany</option>
+                        <option value="advanced">Zaawansowany</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dni treningowe w tygodniu:</label>
+                    <select id="workoutDays">
+                        <option value="2">2 dni</option>
+                        <option value="3" selected>3 dni</option>
+                        <option value="4">4 dni</option>
+                        <option value="5">5 dni</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Czas trwania sesji (min):</label>
+                    <input type="number" id="workoutDuration" value="60" min="30" max="120">
+                </div>
+                <div class="form-group">
+                    <label>Typ treningu:</label>
+                    <select id="workoutType">
+                        <option value="both">Siła + Cardio</option>
+                        <option value="strength">Tylko siła</option>
+                        <option value="cardio">Tylko cardio</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="generateWorkoutPlan()">Generuj Plan Treningowy</button>
+
+            <div class="loading" id="workoutLoading">
+                <div class="spinner"></div>
+                <p>Tworzę plan treningowy...</p>
+            </div>
+
+            <div class="result" id="workoutResult">
+                <h3>Twój Plan Treningowy:</h3>
+                <pre id="workoutPlan"></pre>
+            </div>
+        </div>
+
+        <!-- Progress Analysis -->
+        <div id="progress" class="tab-content">
+            <h2>📈 Analiza Postępów</h2>
+            <p style="margin-bottom: 20px; color: #666;">Sprawdź swoje postępy i otrzymaj rekomendacje</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Waga początkowa (kg):</label>
+                    <input type="number" id="progressStartWeight" placeholder="85" required>
+                </div>
+                <div class="form-group">
+                    <label>Waga aktualna (kg):</label>
+                    <input type="number" id="progressCurrentWeight" placeholder="80" required>
+                </div>
+                <div class="form-group">
+                    <label>Waga docelowa (kg):</label>
+                    <input type="number" id="progressGoalWeight" placeholder="75">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Liczba tygodni:</label>
+                    <input type="number" id="progressWeeks" placeholder="4" required>
+                </div>
+                <div class="form-group">
+                    <label>Aktualne kalorie dziennie:</label>
+                    <input type="number" id="progressCalories" placeholder="2000">
+                </div>
+                <div class="form-group">
+                    <label>Problem (opcjonalnie):</label>
+                    <select id="progressIssue">
+                        <option value="">Brak konkretnego problemu</option>
+                        <option value="weight_plateau">Waga stoi (plateau)</option>
+                        <option value="slow_progress">Wolne postępy</option>
+                        <option value="too_fast">Zbyt szybka utrata wagi</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="analyzeProgress()">Analizuj Postępy</button>
+
+            <div class="loading" id="progressLoading">
+                <div class="spinner"></div>
+                <p>Analizuję twoje postępy...</p>
+            </div>
+
+            <div class="result" id="progressResult">
+                <h3>Analiza Postępów:</h3>
+                <pre id="progressAnalysis"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:5000' 
+            : '';
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function askExpert() {
+            const question = document.getElementById('expertQuestion').value;
+            if (!question.trim()) {
+                alert('Proszę wpisać pytanie');
+                return;
+            }
+
+            const context = {};
+            const weight = document.getElementById('expertWeight').value;
+            const height = document.getElementById('expertHeight').value;
+            const age = document.getElementById('expertAge').value;
+
+            if (weight) context.weight = parseInt(weight);
+            if (height) context.height = parseInt(height);
+            if (age) context.age = parseInt(age);
+
+            showLoading('expertLoading', 'expertResult');
+
+            try {
+                const response = await fetch(`${API_URL}/api/diet-expert`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, context })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('expertAnswer').textContent = data.answer;
+                    showResult('expertResult', 'expertLoading');
+                } else {
+                    throw new Error(data.error || 'Błąd serwera');
+                }
+            } catch (error) {
+                showError('expertResult', error.message);
+                hideLoading('expertLoading');
+            }
+        }
+
+        async function calculateDeficit() {
+            const weight = document.getElementById('calcWeight').value;
+            const height = document.getElementById('calcHeight').value;
+            const age = document.getElementById('calcAge').value;
+            const gender = document.getElementById('calcGender').value;
+            const activity = document.getElementById('calcActivity').value;
+            const goal = document.getElementById('calcGoal').value;
+
+            if (!weight || !height || !age) {
+                alert('Proszę wypełnić wszystkie wymagane pola');
+                return;
+            }
+
+            showLoading('calcLoading', 'calcResult');
+
+            try {
+                const response = await fetch(`${API_URL}/api/calculate-deficit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        weight: parseInt(weight),
+                        height: parseInt(height),
+                        age: parseInt(age),
+                        gender,
+                        activity_level: activity,
+                        goal
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayCalculations(data.calculations);
+                    showResult('calcResult', 'calcLoading');
+                } else {
+                    throw new Error(data.error || 'Błąd serwera');
+                }
+            } catch (error) {
+                showError('calcResult', error.message);
+                hideLoading('calcLoading');
+            }
+        }
+
+        function displayCalculations(calc) {
+            const dataDiv = document.getElementById('calcData');
+            dataDiv.innerHTML = `
+                <div class="macro-card">
+                    <h4>BMR</h4>
+                    <div class="value">${calc.bmr}</div>
+                    <div class="unit">kcal/dzień</div>
+                </div>
+                <div class="macro-card">
+                    <h4>TDEE</h4>
+                    <div class="value">${calc.tdee}</div>
+                    <div class="unit">kcal/dzień</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Cel Kaloryczny</h4>
+                    <div class="value">${calc.target_calories}</div>
+                    <div class="unit">kcal/dzień</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Białko</h4>
+                    <div class="value">${calc.macros.protein.grams}g</div>
+                    <div class="unit">${calc.macros.protein.percentage}% (${calc.macros.protein.calories} kcal)</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Węglowodany</h4>
+                    <div class="value">${calc.macros.carbs.grams}g</div>
+                    <div class="unit">${calc.macros.carbs.percentage}% (${calc.macros.carbs.calories} kcal)</div>
+                </div>
+                <div class="macro-card">
+                    <h4>Tłuszcze</h4>
+                    <div class="value">${calc.macros.fats.grams}g</div>
+                    <div class="unit">${calc.macros.fats.percentage}% (${calc.macros.fats.calories} kcal)</div>
+                </div>
+            `;
+
+            const recList = document.getElementById('calcRecommendations');
+            recList.innerHTML = calc.recommendations.map(rec => `<li>${rec}</li>`).join('');
+        }
+
+        async function generateMealPlan() {
+            const calories = document.getElementById('mealCalories').value;
+            if (!calories) {
+                alert('Proszę podać liczbę kalorii');
+                return;
+            }
+
+            const protein = document.getElementById('mealProtein').value;
+            const carbs = document.getElementById('mealCarbs').value;
+            const fats = document.getElementById('mealFats').value;
+            const meals = document.getElementById('mealCount').value;
+
+            showLoading('mealLoading', 'mealResult');
+
+            try {
+                const body = {
+                    calories: parseInt(calories),
+                    meals: parseInt(meals)
+                };
+                if (protein) body.protein = parseInt(protein);
+                if (carbs) body.carbs = parseInt(carbs);
+                if (fats) body.fats = parseInt(fats);
+
+                const response = await fetch(`${API_URL}/api/meal-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('mealPlan').textContent = data.meal_plan;
+                    showResult('mealResult', 'mealLoading');
+                } else {
+                    throw new Error(data.error || 'Błąd serwera');
+                }
+            } catch (error) {
+                showError('mealResult', error.message);
+                hideLoading('mealLoading');
+            }
+        }
+
+        async function generateWorkoutPlan() {
+            const goal = document.getElementById('workoutGoal').value;
+            const experience = document.getElementById('workoutExperience').value;
+            const days = document.getElementById('workoutDays').value;
+            const duration = document.getElementById('workoutDuration').value;
+            const type = document.getElementById('workoutType').value;
+
+            showLoading('workoutLoading', 'workoutResult');
+
+            try {
+                const response = await fetch(`${API_URL}/api/workout-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        goal,
+                        experience,
+                        days_per_week: parseInt(days),
+                        duration: parseInt(duration),
+                        type
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('workoutPlan').textContent = data.workout_plan;
+                    showResult('workoutResult', 'workoutLoading');
+                } else {
+                    throw new Error(data.error || 'Błąd serwera');
+                }
+            } catch (error) {
+                showError('workoutResult', error.message);
+                hideLoading('workoutLoading');
+            }
+        }
+
+        async function analyzeProgress() {
+            const startWeight = document.getElementById('progressStartWeight').value;
+            const currentWeight = document.getElementById('progressCurrentWeight').value;
+            const weeks = document.getElementById('progressWeeks').value;
+
+            if (!startWeight || !currentWeight || !weeks) {
+                alert('Proszę wypełnić wymagane pola');
+                return;
+            }
+
+            const goalWeight = document.getElementById('progressGoalWeight').value;
+            const calories = document.getElementById('progressCalories').value;
+            const issue = document.getElementById('progressIssue').value;
+
+            showLoading('progressLoading', 'progressResult');
+
+            try {
+                const body = {
+                    starting_weight: parseFloat(startWeight),
+                    current_weight: parseFloat(currentWeight),
+                    weeks_elapsed: parseInt(weeks)
+                };
+                if (goalWeight) body.goal_weight = parseFloat(goalWeight);
+                if (calories) body.calories = parseInt(calories);
+                if (issue) body.issue = issue;
+
+                const response = await fetch(`${API_URL}/api/analyze-progress`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('progressAnalysis').textContent = data.analysis;
+                    showResult('progressResult', 'progressLoading');
+                } else {
+                    throw new Error(data.error || 'Błąd serwera');
+                }
+            } catch (error) {
+                showError('progressResult', error.message);
+                hideLoading('progressLoading');
+            }
+        }
+
+        function showLoading(loadingId, resultId) {
+            document.getElementById(loadingId).classList.add('show');
+            document.getElementById(resultId).classList.remove('show');
+            document.getElementById(resultId).classList.remove('error');
+        }
+
+        function hideLoading(loadingId) {
+            document.getElementById(loadingId).classList.remove('show');
+        }
+
+        function showResult(resultId, loadingId) {
+            document.getElementById(resultId).classList.add('show');
+            document.getElementById(resultId).classList.remove('error');
+            hideLoading(loadingId);
+        }
+
+        function showError(resultId, message) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.classList.add('show', 'error');
+            resultDiv.querySelector('pre, #calcData').textContent = `Błąd: ${message}`;
+        }
+    </script>
+</body>
+</html>
